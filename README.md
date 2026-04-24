@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Proprietary_Research-red.svg)](LICENSE)
 
-**GAWD** (**G**eneralized **A**tomic **W**eight **D**escriptor) is a deterministic, composition-first engine for direct computation of attenuation crossover coordinates from chemical formula.
+**GAWD** (**G**eneralized **A**tomic **W**eight **D**escriptor) is a deterministic, composition-first engine for direct computation of attenuation crossover coordinates from chemical formula only.
 
 **GAWD** computes the pair–Compton crossover (**Ex**) and the photoelectric–scattering crossover (**EPC**) directly from stoichiometry, using composition-weighted atomic moments and bounded physics-based refinements. It is designed to replace repeated runtime table-search and interpolation with a compact, auditable computational model.
 
@@ -94,19 +94,66 @@ Examples:
 
 ## Outputs
 
-Typical outputs include:
+## Core Computed Quantities
 
-- `Ex_pred_MeV`
-- `EPC_pred_MeV`
-- `EPC_shell2_MeV`
-- `EPC_final_MeV`
-- `max_Z`
-- `max_nsub`
-- `Dlow`
-- `Dhigh`
-- `Sclosest_pred`
-- `J1`, `J2`, `J3`, `J4`
-- expanded derived descriptors when enabled
+These are the quantities GAWD computes directly from chemical formula and atomic constants.
+
+### Stoichiometric foundation
+- **Mass fractions (`w_mass_fractions`)** — element-by-element composition weights derived from the input formula
+- **Composition moments (`J1`, `J2`, `J3`, `J4`)** — the core stoichiometric invariants that drive the model
+
+### Primary crossover outputs
+- **`Ex_pred_MeV`** — pair–Compton crossover energy
+- **`EPC_pred_MeV`** — base photoelectric–scattering crossover energy
+- **`EPC_shell2_MeV`** — shell-corrected EPC
+- **`EPC_final_MeV`** — final EPC after bounded actinide-edge refinement
+
+### Shell and edge correction state
+- **`Dlow` / `Dhigh`** — low-end and high-end shell drivers
+- **`low_gate` / `high_gate`** — hard gate states controlling shell correction activation
+- **`max_nsub`** — maximum subshell complexity proxy in the compound
+- **`max_Z`** — highest atomic number present
+- **`Sclosest_pred`** — mass-fraction-weighted edge-proximity score
+- **`R1S_array`** — per-element shell structure values
+- **`Shift_exponent`** — exponential shell-correction term applied to the base EPC
+
+## Derived Quantities from GawdApotheosis
+
+These quantities are derived from the core GAWD outputs and are intended for search, ranking, filtering, and comparative analysis.
+
+- **`Etot`** — total crossover span  
+  `Etot = Ex_pred_MeV + EPC_final_MeV`
+
+- **`REB`** — relative energy balance  
+  `REB = EPC_final_MeV / Ex_pred_MeV`
+
+- **`Sigma`** — edge-weighted crossover ratio  
+  `Sigma = (Ex_pred_MeV / EPC_final_MeV) * Sclosest_pred`
+
+- **`R1s_weighted`** — weighted shell-structure summary across the compound
+
+- **`delta_AN_raw`** — raw actinide-edge correction magnitude
+
+- **`Variance_surrogate`** — composition-variance proxy  
+  `Variance_surrogate = J2 - (J1 * J1)`
+
+- **`Gain`** — shell-correction amplification factor  
+  `Gain = EPC_shell2_MeV / EPC_pred_MeV`
+
+- **`shell_val`** — compact encoded shell/regime classification
+
+- **`VectorV3` / `VectorV4`** — grouped moment tuples for downstream analysis
+
+
+
+
+
+
+
+
+
+
+
 
 ## Minimal Example
 
