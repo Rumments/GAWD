@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Rumments"
+  given-names: "Kenneth"
+  orcid: "https://orcid.org/0009-0001-0924-1850"
+title: "Generalized Atomic Weight Descriptor (GAWD)"
+version: 1.0.0
+date-released: 2026-04-21
+url: "https://github.com/Rumments/GAWD"
