@@ -8,7 +8,7 @@
 
 **GAWD** computes the pair–Compton crossover (**Ex**) and the photoelectric–scattering crossover (**EPC**) directly from stoichiometry, using composition-weighted atomic moments and bounded physics-based refinements. It is designed to replace repeated runtime table-search and interpolation with a compact, auditable computational model.
 
-##Scientific Position
+## Scientific Position
 
 **GAWD** was developed against legacy attenuation-reference behavior but does not depend on runtime legacy lookup to produce predictions. Its central claim is that a substantial portion of the attenuation crossover landscape can be recovered directly from stoichiometric moment structure, with bounded atomic-regime refinements where required.
 
@@ -22,7 +22,7 @@ Given a chemical formula, GAWD computes:
 
 The framework is deterministic. The same input formula always produces the same result.
 
-##Intended Use
+## Intended Use
 
 GAWD is intended for:
 
