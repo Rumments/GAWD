@@ -10,6 +10,15 @@
 
 **GAWD** was developed against legacy attenuation-reference behavior but does not depend on runtime legacy lookup to produce predictions. Its central claim is that a substantial portion of the attenuation crossover landscape can be recovered directly from stoichiometric moment structure, with bounded atomic-regime refinements where required.
 
+## Core Idea
+
+GAWD reduces a compound to a compact family of composition moments built from:
+
+- elemental mass fractions
+- atomic number
+- atomic mass
+
+These moments drive direct laws for the main crossover coordinates. Where atomic-regime structure matters, GAWD applies tightly bounded shell-aware and actinide-edge refinements without replacing the core model with ad hoc patching or black-box inference.
 
 ## Core Moment Definition
 
@@ -52,17 +61,8 @@ Given a chemical formula, GAWD computes:
 - **EPC** — the energy at which photoelectric attenuation equals total scattering
 - supporting derived quantities for analysis, filtering, and comparison
 
-The framework is deterministic. The same input formula always produces the same result.
+**The framework is deterministic. The same input formula always produces the same result.**
 
-## Core Idea
-
-GAWD reduces a compound to a compact family of composition moments built from:
-
-- elemental mass fractions
-- atomic number
-- atomic mass
-
-These moments drive direct laws for the main crossover coordinates. Where atomic-regime structure matters, GAWD applies tightly bounded shell-aware and actinide-edge refinements without replacing the core model with ad hoc patching or black-box inference.
 
 ## Intended Use
 
