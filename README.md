@@ -102,19 +102,19 @@ GAWD is not:
 
 It is a direct stoichiometric model.
 
-##Repository Scope
+## Repository Scope
 
 This repository contains the public GAWD engine and supporting code needed to compute crossover coordinates from chemical formula.
 
 It does not document or expose private downstream search workflows, internal ranking pipelines, or unpublished application-specific deployment layers.
 
-##Status
+## Status
 
 **GAWD** is under active development. Public releases may expand the validation set, documentation, parser behavior, and supporting utilities, while preserving the deterministic composition-first core.
 
 ## Inputs
 
-GAWD accepts a chemical formula string as input.
+GAWD accepts a chemical formula string as input (it does not need or care about charge).
 
 Examples:
 
