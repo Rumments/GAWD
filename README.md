@@ -6,6 +6,11 @@
 
 **GAWD** (**G**eneralized **A**tomic **W**eight **D**escriptor) is a deterministic, composition-first engine for direct computation of attenuation crossover coordinates from chemical formula only.
 
+## Scientific Position
+
+**GAWD** was developed against legacy attenuation-reference behavior but does not depend on runtime legacy lookup to produce predictions. Its central claim is that a substantial portion of the attenuation crossover landscape can be recovered directly from stoichiometric moment structure, with bounded atomic-regime refinements where required.
+
+
 ## Core Moment Definition
 
 **GAWD** computes the pair–Compton crossover (**Ex**) and the photoelectric–scattering crossover (**EPC**) directly from stoichiometry, using composition-weighted atomic moments and bounded physics-based refinements. It is designed to replace repeated runtime table-search and interpolation with a compact, auditable computational model.
@@ -38,10 +43,6 @@ S_{\mathrm{closest}}(E)=\sum_i w_i \exp\!\left(-\min_{sh\in\{K,L1,L2,L3\}}
 \qquad
 EPC_{final}=EPC_{shell2}\,\exp\!\bigl(b(S_{\mathrm{closest}}-S_0)\bigr)
 ```
-
-## Scientific Position
-
-**GAWD** was developed against legacy attenuation-reference behavior but does not depend on runtime legacy lookup to produce predictions. Its central claim is that a substantial portion of the attenuation crossover landscape can be recovered directly from stoichiometric moment structure, with bounded atomic-regime refinements where required.
 
 ## What GAWD Does
 
