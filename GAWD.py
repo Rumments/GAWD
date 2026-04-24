@@ -1,0 +1,547 @@
+import re, math, json, csv
+import numpy as np
+import pandas as pd
+from numpy import nan
+
+
+Zmap_global = {'h': 1, 'he': 2, 'li': 3, 'be': 4, 'b': 5, 'c': 6, 'n': 7, 'o': 8, 'f': 9, 'ne': 10, 'na': 11, 'mg': 12, 'al': 13, 'si': 14, 'p': 15, 's': 16, 'cl': 17, 'ar': 18, 'k': 19, 'ca': 20, 'sc': 21, 'ti': 22, 'v': 23, 'cr': 24, 'mn': 25, 'fe': 26, 'co': 27, 'ni': 28, 'cu': 29, 'zn': 30, 'ga': 31, 'ge': 32, 'as': 33, 'se': 34, 'br': 35, 'kr': 36, 'rb': 37, 'sr': 38, 'y': 39, 'zr': 40, 'nb': 41, 'mo': 42, 'tc': 43, 'ru': 44, 'rh': 45, 'pd': 46, 'ag': 47, 'cd': 48, 'in': 49, 'sn': 50, 'sb': 51, 'te': 52, 'i': 53, 'xe': 54, 'cs': 55, 'ba': 56, 'la': 57, 'ce': 58, 'pr': 59, 'nd': 60, 'pm': 61, 'sm': 62, 'eu': 63, 'gd': 64, 'tb': 65, 'dy': 66, 'ho': 67, 'er': 68, 'tm': 69, 'yb': 70, 'lu': 71, 'hf': 72, 'ta': 73, 'w': 74, 're': 75, 'os': 76, 'ir': 77, 'pt': 78, 'au': 79, 'hg': 80, 'tl': 81, 'pb': 82, 'bi': 83, 'po': 84, 'at': 85, 'rn': 86, 'fr': 87, 'ra': 88, 'ac': 89, 'th': 90, 'pa': 91, 'u': 92, 'np': 93, 'pu': 94, 'am': 95, 'cm': 96, 'bk': 97, 'cf': 98, 'es': 99, 'fm': 100, 'md': 101, 'no': 102, 'lr': 103, 'rf': 104, 'db': 105, 'sg': 106, 'bh': 107, 'hs': 108, 'mt': 109, 'ds': 110, 'rg': 111, 'cn': 112, 'nh': 113, 'fl': 114, 'mc': 115, 'lv': 116, 'ts': 117, 'og': 118, 'uue': 119}
+Amap_global = {'h': 1.008, 'he': 4.0026022, 'li': 6.94, 'be': 9.01218315, 'b': 10.81, 'c': 12.011, 'n': 14.007, 'o': 15.999, 'f': 18.9984031636, 'ne': 20.17976, 'na': 22.989769282, 'mg': 24.305, 'al': 26.98153857, 'si': 28.085, 'p': 30.9737619985, 's': 32.06, 'cl': 35.45, 'ar': 39.9481, 'k': 39.09831, 'ca': 40.0784, 'sc': 44.9559085, 'ti': 47.8671, 'v': 50.94151, 'cr': 51.99616, 'mn': 54.9380443, 'fe': 55.8452, 'co': 58.9331944, 'ni': 58.69344, 'cu': 63.5463, 'zn': 65.382, 'ga': 69.7231, 'ge': 72.6308, 'as': 74.9215956, 'se': 78.9718, 'br': 79.904, 'kr': 83.7982, 'rb': 85.46783, 'sr': 87.621, 'y': 88.905842, 'zr': 91.2242, 'nb': 92.906372, 'mo': 95.951, 'tc': 98.0, 'ru': 101.072, 'rh': 102.905502, 'pd': 106.421, 'ag': 107.86822, 'cd': 112.4144, 'in': 114.8181, 'sn': 118.7107, 'sb': 121.7601, 'te': 127.603, 'i': 126.904473, 'xe': 131.2936, 'cs': 132.905451966, 'ba': 137.3277, 'la': 138.905477, 'ce': 140.1161, 'pr': 140.907662, 'nd': 144.2423, 'pm': 145.0, 'sm': 150.362, 'eu': 151.9641, 'gd': 157.253, 'tb': 158.925352, 'dy': 162.5001, 'ho': 164.930332, 'er': 167.2593, 'tm': 168.934222, 'yb': 173.0451, 'lu': 174.96681, 'hf': 178.492, 'ta': 180.947882, 'w': 183.841, 're': 186.2071, 'os': 190.233, 'ir': 192.2173, 'pt': 195.0849, 'au': 196.9665695, 'hg': 200.5923, 'tl': 204.38, 'pb': 207.21, 'bi': 208.980401, 'po': 209.0, 'at': 210.0, 'rn': 222.0, 'fr': 223.0, 'ra': 226.0, 'ac': 227.0, 'th': 232.03774, 'pa': 231.035882, 'u': 238.028913, 'np': 237.0, 'pu': 244.0, 'am': 243.0, 'cm': 247.0, 'bk': 247.0, 'cf': 251.0, 'es': 252.0, 'fm': 257.0, 'md': 258.0, 'no': 259.0, 'lr': 266.0, 'rf': 267.0, 'db': 268.0, 'sg': 269.0, 'bh': 270.0, 'hs': 269.0, 'mt': 278.0, 'ds': 281.0, 'rg': 282.0, 'cn': 285.0, 'nh': 286.0, 'fl': 289.0, 'mc': 289.0, 'lv': 293.0, 'ts': 294.0, 'og': 294.0, 'uue': 315.0}
+E1s_map = {1: 13.6, 2: 24.6, 3: 54.7, 4: 111.5, 5: 188.0, 6: 284.4, 7: 409.9, 8: 538.0, 9: 696.7, 10: 870.2, 11: 1070.8, 12: 1303.0, 13: 1559.6, 14: 1839.0, 15: 2145.5, 16: 2472.0, 17: 2822.4, 18: 3205.9, 19: 3608.4, 20: 4038.5, 21: 4492.0, 22: 4966.0, 23: 5465.0, 24: 5989.0, 25: 6539.0, 26: 7112.0, 27: 7709.0, 28: 8333.0, 29: 8979.0, 30: 9659.0, 31: 10367.0, 32: 11103.0, 33: 11867.0, 34: 12658.0, 35: 13474.0, 36: 14326.0, 37: 15200.0, 38: 16105.0, 39: 17038.0, 40: 17998.0, 41: 18986.0, 42: 20000.0, 43: 21044.0, 44: 22117.0, 45: 23220.0, 46: 24350.0, 47: 25514.0, 48: 26711.0, 49: 27940.0, 50: 29200.0, 51: 30491.0, 52: 31814.0, 53: 33169.0, 54: 34561.0, 55: 35985.0, 56: 37441.0, 57: 38925.0, 58: 40443.0, 59: 41991.0, 60: 43569.0, 61: 45184.0, 62: 46834.0, 63: 48519.0, 64: 50239.0, 65: 51996.0, 66: 53789.0, 67: 55618.0, 68: 57486.0, 69: 59390.0, 70: 61332.0, 71: 63314.0, 72: 65351.0, 73: 67416.0, 74: 69525.0, 75: 71676.0, 76: 73871.0, 77: 76111.0, 78: 78395.0, 79: 80725.0, 80: 83102.0, 81: 85530.0, 82: 88005.0, 83: 90526.0, 84: 93105.0, 85: 95730.0, 86: 98404.0, 87: 101137.0, 88: 103922.0, 89: 106755.0, 90: 109651.0, 91: 112601.0, 92: 115606.0}
+nsub_map = {1: 1, 2: 1, 3: 1, 4: 3, 5: 5, 6: 2, 7: 3, 8: 3, 9: 2, 10: 4, 11: 4, 12: 4, 13: 4, 14: 4, 15: 4, 16: 4, 17: 4, 18: 7, 19: 7, 20: 7, 21: 7, 22: 7, 23: 7, 24: 7, 25: 7, 26: 7, 27: 7, 28: 7, 29: 7, 30: 9, 31: 9, 32: 9, 33: 9, 34: 9, 35: 9, 36: 12, 37: 12, 38: 12, 39: 12, 40: 12, 41: 12, 42: 12, 43: 12, 44: 12, 45: 12, 46: 12, 47: 12, 48: 14, 49: 14, 50: 14, 51: 14, 52: 14, 53: 14, 54: 19, 55: 19, 56: 19, 57: 19, 58: 19, 59: 19, 60: 19, 61: 19, 62: 19, 63: 19, 64: 19, 65: 19, 66: 19, 67: 19, 68: 19, 69: 19, 70: 19, 71: 19, 72: 19, 73: 19, 74: 19, 75: 19, 76: 19, 77: 19, 78: 19, 79: 19, 80: 21, 81: 21, 82: 21, 83: 21, 84: 21, 85: 21, 86: 22, 87: 24, 88: 24, 89: 24, 90: 24, 91: 24, 92: 24}
+edgeE = {'ga': {'K': 0.010368309999999999, 'L1': 0.0013026, 'L2': 0.00114362, 'L3': 0.0011165699999999999}, 'hf': {'K': 0.06535036, 'L1': 0.011270299999999999, 'L2': 0.010734899999999999, 'L3': 0.009557999999999999}, 'br': {'K': 0.0134741, 'L1': 0.0017817999999999998, 'L2': 0.0015963099999999999, 'L3': 0.0015499799999999998}, 's': {'K': 0.00247163, 'L1': 0.00023914999999999999, 'L2': 0.0001636, 'L3': 0.00016382}, 'mo': {'K': 0.020000499999999997, 'L1': 0.0028672, 'L2': 0.00262598, 'L3': 0.0025210999999999996}, 'hs': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'fl': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'li': {'K': 5.47e-05, 'L1': nan, 'L2': nan, 'L3': nan}, 'am': {'K': 0.1249861, 'L1': 0.023808, 'L2': 0.022952, 'L3': 0.01851}, 'n': {'K': 0.00040989999999999993, 'L1': 2.03e-05, 'L2': nan, 'L3': nan}, 'la': {'K': 0.0389293, 'L1': 0.0062711699999999995, 'L2': 0.0058951, 'L3': 0.00548705}, 'tc': {'K': 0.02104567, 'L1': 0.0030553, 'L2': 0.0027944299999999997, 'L3': 0.0026779}, 'rg': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'lv': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'pu': {'K': 0.12179016999999999, 'L1': 0.023112999999999998, 'L2': 0.022269999999999998, 'L3': 0.01806}, 'cm': {'K': 0.1282413, 'L1': 0.024515, 'L2': 0.023651, 'L3': 0.01897}, 'rn': {'K': 0.09840399999999999, 'L1': 0.018056799999999998, 'L2': 0.0173377, 'L3': 0.01461953}, 'sn': {'K': 0.02920092, 'L1': 0.00446502, 'L2': 0.0041562299999999995, 'L3': 0.00392951}, 'p': {'K': 0.0021444999999999997, 'L1': 0.00018899999999999999, 'L2': 0.000136, 'L3': 0.00013000999999999998}, 'as': {'K': 0.01186715, 'L1': 0.0015322, 'L2': 0.00135974, 'L3': 0.00132392}, 'zr': {'K': 0.01799622, 'L1': 0.0025309, 'L2': 0.0023056799999999996, 'L3': 0.00222129}, 'be': {'K': 0.0001115, 'L1': nan, 'L2': nan, 'L3': nan}, 'ba': {'K': 0.03744, 'L1': 0.005990399999999999, 'L2': 0.005623319999999999, 'L3': 0.00524671}, 'nb': {'K': 0.01898361, 'L1': 0.00269546, 'L2': 0.00246254, 'L3': 0.0023682399999999998}, 'rb': {'K': 0.0152015, 'L1': 0.00206607, 'L2': 0.0018659, 'L3': 0.0018062}, 'uue': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'ir': {'K': 0.07611238000000001, 'L1': 0.013418999999999999, 'L2': 0.012824799999999999, 'L3': 0.0112167}, 'v': {'K': 0.00546443, 'L1': 0.00062686, 'L2': 0.00051972, 'L3': 0.00051221}, 'og': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'hg': {'K': 0.0831045, 'L1': 0.0148402, 'L2': 0.0142122, 'L3': 0.0122855}, 'na': {'K': 0.0010715199999999999, 'L1': 6.357e-05, 'L2': 3.06e-05, 'L3': 3.0399999999999997e-05}, 'pm': {'K': 0.045197999999999995, 'L1': 0.007435699999999999, 'L2': 0.007014199999999999, 'L3': 0.00646044}, 'sm': {'K': 0.046837699999999996, 'L1': 0.007739289999999999, 'L2': 0.00731492, 'L3': 0.0067188}, 'os': {'K': 0.0738764, 'L1': 0.012971299999999998, 'L2': 0.01238868, 'L3': 0.0108756}, 'pa': {'K': 0.11259839999999999, 'L1': 0.0211003, 'L2': 0.020313499999999998, 'L3': 0.016732900000000002}, 'bh': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'md': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'o': {'K': 0.000538, 'L1': 2.8499999999999998e-05, 'L2': nan, 'L3': nan}, 'ta': {'K': 0.06741124, 'L1': 0.011679799999999999, 'L2': 0.0111329, 'L3': 0.0098787}, 'lu': {'K': 0.06331552, 'L1': 0.0108717, 'L2': 0.01034966, 'L3': 0.00924528}, 'in': {'K': 0.02794072, 'L1': 0.0042383, 'L2': 0.00393871, 'L3': 0.00373084}, 'ar': {'K': 0.0032061399999999997, 'L1': 0.0003263, 'L2': 0.00025057, 'L3': 0.00024846}, 'co': {'K': 0.0077087499999999995, 'L1': 0.0009252599999999999, 'L2': 0.00079338, 'L3': 0.00077836}, 'rf': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'pd': {'K': 0.02435091, 'L1': 0.0036047399999999995, 'L2': 0.0033306599999999996, 'L3': 0.00317375}, 'ra': {'K': 0.1039205, 'L1': 0.019237499999999998, 'L2': 0.018483799999999998, 'L3': 0.01544459}, 'si': {'K': 0.00183913, 'L1': 0.0001498, 'L2': 9.92e-05, 'L3': 9.934e-05}, 'ds': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'cf': {'K': 0.1349571, 'L1': 0.026002389999999997, 'L2': 0.02509779, 'L3': 0.01990145}, 'th': {'K': 0.109648, 'L1': 0.02047, 'L2': 0.0196905, 'L3': 0.0163}, 'tm': {'K': 0.059389, 'L1': 0.010111899999999998, 'L2': 0.009615499999999999, 'L3': 0.0086481}, 'gd': {'K': 0.0502434, 'L1': 0.0083817, 'L2': 0.0079343, 'L3': 0.007246659999999999}, 'po': {'K': 0.09310719999999999, 'L1': 0.016911, 'L2': 0.0162442, 'L3': 0.0138136}, 'mc': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'ca': {'K': 0.00403834, 'L1': 0.0004385, 'L2': 0.00035039999999999995, 'L3': 0.000346611}, 'sc': {'K': 0.0044893699999999995, 'L1': 0.000498, 'L2': 0.00040362, 'L3': 0.00039855}, 're': {'K': 0.07167741, 'L1': 0.012527799999999999, 'L2': 0.011959599999999999, 'L3': 0.010536299999999998}, 'db': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'mt': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'ge': {'K': 0.011103629999999998, 'L1': 0.0014129, 'L2': 0.00124808, 'L3': 0.00121733}, 'sg': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'nd': {'K': 0.0435719, 'L1': 0.00712947, 'L2': 0.00672463, 'L3': 0.0062111499999999995}, 'nh': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'fe': {'K': 0.007110859999999999, 'L1': 0.0008486, 'L2': 0.0007197999999999999, 'L3': 0.00070686}, 'zn': {'K': 0.0096607, 'L1': 0.0011967, 'L2': 0.00104494, 'L3': 0.0010218}, 'h': {'K': 1.3599999999999999e-05, 'L1': nan, 'L2': nan, 'L3': nan}, 'cl': {'K': 0.00282264, 'L1': 0.00027, 'L2': 0.000202, 'L3': 0.00019999999999999998}, 'c': {'K': 0.0002844, 'L1': nan, 'L2': nan, 'L3': nan}, 'se': {'K': 0.012656719999999998, 'L1': 0.0016535999999999999, 'L2': 0.0014742, 'L3': 0.00143424}, 'ru': {'K': 0.022117909999999998, 'L1': 0.0032251, 'L2': 0.0029674499999999995, 'L3': 0.0028386199999999996}, 'tl': {'K': 0.0855301, 'L1': 0.0153456, 'L2': 0.0146986, 'L3': 0.012657499999999999}, 'cr': {'K': 0.0059891599999999994, 'L1': 0.00069637, 'L2': 0.00058357, 'L3': 0.00057436}, 'f': {'K': 0.0006967, 'L1': nan, 'L2': nan, 'L3': nan}, 'w': {'K': 0.0695248, 'L1': 0.0121024, 'L2': 0.011540799999999999, 'L3': 0.010200899999999999}, 'ce': {'K': 0.04044469999999999, 'L1': 0.006548899999999999, 'L2': 0.0061658, 'L3': 0.0057244999999999996}, 'xe': {'K': 0.03456512999999999, 'L1': 0.0054525699999999995, 'L2': 0.00510672, 'L3': 0.00478647}, 'fr': {'K': 0.10113699999999999, 'L1': 0.0186424, 'L2': 0.0179064, 'L3': 0.015026999999999999}, 'sb': {'K': 0.03049199, 'L1': 0.004699149999999999, 'L2': 0.00438122, 'L3': 0.00413299}, 'ts': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'fm': {'K': 0.14193039999999998, 'L1': 0.027573, 'L2': 0.026643999999999998, 'L3': 0.020867999999999998}, 'au': {'K': 0.08072560000000001, 'L1': 0.014352899999999998, 'L2': 0.0137358, 'L3': 0.0119206}, 'at': {'K': 0.095729, 'L1': 0.0174897, 'L2': 0.0167847, 'L3': 0.014216040000000001}, 'bi': {'K': 0.09052858999999999, 'L1': 0.016389, 'L2': 0.0157121, 'L3': 0.013420099999999999}, 'ne': {'K': 0.0008702299999999999, 'L1': 4.8445e-05, 'L2': 2.1661e-05, 'L3': 2.1564e-05}, 'sr': {'K': 0.01610555, 'L1': 0.00221617, 'L2': 0.00200744, 'L3': 0.0019404799999999999}, 'ag': {'K': 0.025515509999999998, 'L1': 0.00380741, 'L2': 0.00352524, 'L3': 0.00335258}, 'pb': {'K': 0.08800472, 'L1': 0.0158605, 'L2': 0.0151987, 'L3': 0.013035399999999999}, 'er': {'K': 0.0574863, 'L1': 0.009751399999999999, 'L2': 0.0092669, 'L3': 0.0083594}, 'te': {'K': 0.031814999999999996, 'L1': 0.004939649999999999, 'L2': 0.00461305, 'L3': 0.00434235}, 'al': {'K': 0.00155953, 'L1': 0.00011787, 'L2': 7.274999999999999e-05, 'L3': 7.287e-05}, 'k': {'K': 0.00360849, 'L1': 0.0003786, 'L2': 0.00029727999999999997, 'L3': 0.00029455}, 'ni': {'K': 0.008331, 'L1': 0.0010084, 'L2': 0.00087, 'L3': 0.0008527399999999999}, 'y': {'K': 0.01703664, 'L1': 0.0023707800000000003, 'L2': 0.0021534699999999998, 'L3': 0.00207826}, 'mn': {'K': 0.00653768, 'L1': 0.00076948, 'L2': 0.0006498799999999999, 'L3': 0.0006388899999999999}, 'cd': {'K': 0.026712939999999998, 'L1': 0.0040196799999999994, 'L2': 0.00372854, 'L3': 0.00353888}, 'mg': {'K': 0.00130333, 'L1': 8.862e-05, 'L2': 4.95e-05, 'L3': 4.9789999999999996e-05}, 'np': {'K': 0.1186887, 'L1': 0.0224375, 'L2': 0.021615, 'L3': 0.01760804}, 'u': {'K': 0.1156098, 'L1': 0.021766099999999997, 'L2': 0.02095472, 'L3': 0.01717423}, 'yb': {'K': 0.0613308, 'L1': 0.0104835, 'L2': 0.009971459999999998, 'L3': 0.0089466}, 'cs': {'K': 0.0359856, 'L1': 0.0057198, 'L2': 0.0053592, 'L3': 0.005012979999999999}, 'ac': {'K': 0.10675899999999999, 'L1': 0.0198552, 'L2': 0.0190834, 'L3': 0.01587945}, 'cu': {'K': 0.008980499999999999, 'L1': 0.001098, 'L2': 0.0009525, 'L3': 0.0009326799999999999}, 'tb': {'K': 0.0519964, 'L1': 0.008713799999999999, 'L2': 0.008254899999999999, 'L3': 0.007513199999999999}, 'b': {'K': 0.000188, 'L1': nan, 'L2': nan, 'L3': nan}, 'i': {'K': 0.03316969, 'L1': 0.00518838, 'L2': 0.00485201, 'L3': 0.00455712}, 'ho': {'K': 0.05561459999999999, 'L1': 0.0093958, 'L2': 0.008913899999999999, 'L3': 0.0080711}, 'no': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'es': {'K': 0.1383915, 'L1': 0.026792099999999996, 'L2': 0.0258699, 'L3': 0.02038942}, 'he': {'K': 2.46e-05, 'L1': nan, 'L2': nan, 'L3': nan}, 'cn': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'rh': {'K': 0.023220139999999997, 'L1': 0.0034124, 'L2': 0.0031463899999999998, 'L3': 0.0030039999999999997}, 'eu': {'K': 0.04851701, 'L1': 0.008047529999999999, 'L2': 0.007614319999999999, 'L3': 0.00697453}, 'ti': {'K': 0.004964881, 'L1': 0.0005610499999999999, 'L2': 0.00045999999999999996, 'L3': 0.00045397899999999997}, 'lr': {'K': nan, 'L1': nan, 'L2': nan, 'L3': nan}, 'pr': {'K': 0.04198876, 'L1': 0.0068319999999999995, 'L2': 0.0064372, 'L3': 0.00596235}, 'dy': {'K': 0.05378619999999999, 'L1': 0.0090461, 'L2': 0.0085802, 'L3': 0.0077859999999999995}, 'pt': {'K': 0.07839869999999999, 'L1': 0.013878999999999999, 'L2': 0.013275200000000001, 'L3': 0.0115657}, 'bk': {'K': 0.1315556, 'L1': 0.025272, 'L2': 0.024381999999999997, 'L3': 0.019448999999999998}, 'kr': {'K': 0.01432719, 'L1': 0.0019204, 'L2': 0.0017309, 'L3': 0.00167907}}
+w_mass_fractions = {'H': 0.0016842434341467199, 'He': 0.00013375707291371462, 'Li': 0.0023191764747972693, 'Be': 0.0006023297737188573, 'B': 0.002167460895610243, 'C': 0.010034448356912822, 'N': 0.003510594908049569, 'O': 0.016039411132686532, 'F': 0.0031743983916235684, 'Ne': 0.0006743577040209646, 'Na': 0.008450873960780177, 'Mg': 0.00487327817463524, 'Al': 0.0058607661640484796, 'Si': 0.0065697190066681425, 'P': 0.007762999297142382, 'S': 0.008570927698213309, 'Cl': 0.01006953676179088, 'Ar': 0.0013349667684848527, 'K': 0.012412404426298885, 'Ca': 0.013393210724425772, 'Sc': 0.0022534730272983842, 'Ti': 0.003199200352644621, 'V': 0.004255848399951362, 'Cr': 0.005212749469097757, 'Mn': 0.006425627805356711, 'Fe': 0.02332760700114345, 'Co': 0.008862307653704663, 'Ni': 0.009806948506694885, 'Cu': 0.011679581586631894, 'Zn': 0.013109429072783434, 'Ga': 0.004659947356482348, 'Ge': 0.004854283651461253, 'As': 0.005007389105757769, 'Se': 0.005278084747331267, 'Br': 0.0053403883873833135, 'Kr': 0.0028003287330022547, 'Rb': 0.007140309102592661, 'Sr': 0.0073201931519528635, 'Y': 0.007427533762191751, 'Zr': 0.007621218248278135, 'Nb': 0.0077617533249698745, 'Mo': 0.008016113182034322, 'Tc': 0.001637458894309311, 'Ru': 0.008443941090083198, 'Rh': 0.008597118853227784, 'Pd': 0.017781633978703183, 'Ag': 0.00901172327817926, 'Cd': 0.00939152852696146, 'In': 0.009592342809831424, 'Sn': 0.009917545487994098, 'Sb': 0.010172304016173016, 'Te': 0.010660442208701581, 'I': 0.010602084593953358, 'Xe': 0.004387507613997733, 'Cs': 0.006662057584405885, 'Ba': 0.006883728483674717, 'La': 0.023209388651217085, 'Ce': 0.011705834396986367, 'Pr': 0.011771964511134188, 'Nd': 0.012050552911766935, 'Pm': 0.0024227708130086746, 'Sm': 0.012561816033986562, 'Eu': 0.012695661589832121, 'Gd': 0.013137516505450104, 'Tb': 0.013277231181818267, 'Dy': 0.013575879289344513, 'Ho': 0.013778910156876916, 'Er': 0.013973481042905578, 'Tm': 0.014113410426894065, 'Yb': 0.01445684888324715, 'Lu': 0.014617395879766699, 'Hf': 0.014911903722604975, 'Ta': 0.015117077489149573, 'W': 0.01535877962187337, 'Re': 0.015556452657068535, 'Os': 0.015892791726588935, 'Ir': 0.016058567730873528, 'Pt': 0.032596275984739034, 'Au': 0.016455339852518777, 'Hg': 0.016758247232906205, 'Tl': 0.017074686164231478, 'Pb': 0.03462223035610534, 'Bi': 0.01745902124253961, 'Po': 0.0034921317235780203, 'At': 0.003508840487805666, 'Rn': 0.003709345658537419, 'Fr': 0.0037260544227650646, 'Ra': 0.003776180715448003, 'Ac': 0.003792889479675649, 'Th': 0.007754127779151661, 'Pa': 0.003860324080464249, 'U': 0.019885844933399347, 'Np': 0.003959977121952109, 'Pu': 0.004076938471545631, 'Am': 0.004060229707317986, 'Cm': 0.004127064764228569, 'Bk': 0.004127064764228569, 'Cf': 0.004193899821139153, 'Es': 0.0042106085853667995, 'Fm': 0.00429415240650503, 'Md': 0.004310861170732675, 'No': 0.004327569934960322, 'Lr': 0.004444531284553844, 'Rf': 0.00446124004878149, 'Db': 0.004477948813009136, 'Sg': 0.004494657577236782, 'Bh': 0.004511366341464428, 'Hs': 0.004494657577236782, 'Mt': 0.0046450364552855965, 'Ds': 0.0046951627479685345, 'Rg': 0.004711871512196181, 'Cn': 0.004761997804879119, 'Nh': 0.004778706569106765, 'Fl': 0.004828832861789703, 'Mc': 0.004828832861789703, 'Lv': 0.004895667918700287, 'Ts': 0.0049123766829279325, 'Og': 0.0049123766829279325}
+
+
+
+def parse_formula(formula: str) -> dict:
+    # Regex updated to capture floats: \d*\.\d+|\d+
+    toks = re.findall(r'([A-Z][a-z]?|\(|\)|\d*\.\d+|\d+)', str(formula))
+    stack = [{}]; i = 0
+
+    def get_num(s):
+        try: return float(s)
+        except: return None
+
+    while i < len(toks):
+        tok = toks[i]
+        if tok == '(':
+            stack.append({}); i += 1
+        elif tok == ')':
+            grp = stack.pop(); i += 1
+            mult = 1.0
+            val = get_num(toks[i]) if i < len(toks) else None
+            if val is not None:
+                mult = val; i += 1
+            for el, ct in grp.items():
+                stack[-1][el] = stack[-1].get(el, 0) + ct * mult
+        elif re.fullmatch(r'[A-Z][a-z]?', tok):
+            el = tok; i += 1
+            ct = 1.0
+            val = get_num(toks[i]) if i < len(toks) else None
+            if val is not None:
+                ct = val; i += 1
+            stack[-1][el] = stack[-1].get(el, 0) + ct
+        else:
+            i += 1
+    return {k.lower(): v for k, v in stack[-1].items()}
+
+def mass_fractions_from_formula(formula: str, Amap: dict) -> dict:
+    comp = parse_formula(formula)
+    masses = {}
+    total = 0.0
+    for sym, n in comp.items():
+        if sym not in Amap:
+            raise ValueError(f"Unknown element in formula: {sym} (check PeriodicTableJSON.json)")
+        m = Amap[sym] * n
+        masses[sym] = m
+        total += m
+    return {sym: m/total for sym,m in masses.items()}
+
+def max_Z_in_formula(formula: str, Zmap: dict) -> int:
+    comp = parse_formula(formula)
+    return max((Zmap.get(sym,0) for sym in comp.keys()), default=0)
+
+# ---------- GAWD moments + core predictions ----------
+def J_moments(w: dict, Zmap: dict, Amap: dict):
+    J1=J2=J4=J3=0.0
+    for sym, wi in w.items():
+        z = Zmap[sym]
+        a = Amap[sym]
+        J1 += wi*(z)/(a)
+        J2 += wi*(z**2)/(a)
+        J4 += wi*(z**4)/(a)
+        J3 += wi*(z**3)/(a) # added for 2nd stage
+    return J1, J2, J4, J3
+
+def gawd_core_predict(J1,J2,J4):
+    # Frozen "core" laws (MeV)
+    Ex_pred  = 80.48002363284048*(J1**0.6005)*(J2**(-0.6590))
+    EPC_pred = 0.00257*(J4**0.4235)
+    return Ex_pred, EPC_pred
+
+def R1s(Z: int, E1s_map: dict, K_eV: float = 10.5207100592):
+    # R1s = E1s / (K Z^2), with K calibrated at Fe: 7112 eV / 26^2
+    e1s = E1s_map.get(int(Z), np.nan)
+    if not np.isfinite(e1s) or Z <= 0:
+        return np.nan
+    return float(e1s / (K_eV * (Z**2)))
+
+# ---------- EPC shell2 correction ----------
+def epc_shell2(EPC_pred: float, w: dict, Zmap: dict, E1s_map: dict, nsub_map: dict,
+               a_low=0.360, a_high=0.410,
+               gate_EPC_low=0.015, gate_Dhigh=0.180):
+    """
+    Two one-sided drivers + hard gates.
+    Returns: EPC_shell2, low_gate, high_gate, Dlow, Dhigh, max_nsub
+    """
+    # material-level shell complexity proxy
+    max_nsub = 0
+    for sym in w.keys():
+        Z = Zmap[sym]
+        max_nsub = max(max_nsub, nsub_map.get(int(Z), 0))
+
+    Dlow = 0.0
+    Dhigh = 0.0
+    R1S_array = []
+    for sym, wi in w.items():
+        Z = Zmap[sym]
+        r = R1s(Z, E1s_map)
+        R1S_array.append(r)
+        ns = nsub_map.get(int(Z), 0)
+        if ns <= 4 and np.isfinite(r):
+            Dlow  += wi * max(0.0, 1.0 - r)
+        if ns >= 20 and np.isfinite(r):
+            Dhigh += wi * max(0.0, r - 1.0)
+
+    low_gate  = (max_nsub <= 4) and (EPC_pred < gate_EPC_low)
+    high_gate = (max_nsub >= 20) and (Dhigh > gate_Dhigh)
+
+    f = 0.0
+    if low_gate:  f += a_low  * Dlow
+    if high_gate: f += a_high * Dhigh
+
+    EPC2 = float(EPC_pred * math.exp(f))
+    return EPC2, bool(low_gate), bool(high_gate), float(Dlow), float(Dhigh), int(max_nsub), R1S_array, f
+
+def Sclosest(formula: str, E_mev: float, edgeE: dict, Amap: dict):
+    w = mass_fractions_from_formula(formula, Amap)
+    if not np.isfinite(E_mev) or E_mev<=0:
+        return np.nan
+    lnE = math.log(E_mev)
+    s=0.0
+
+    for sym, wi in w.items():
+        if sym not in edgeE:
+            continue
+        best=None
+        for sh in ["K","L1","L2","L3"]:
+            Ee = edgeE[sym].get(sh, np.nan)
+            if not np.isfinite(Ee) or Ee<=0:
+                continue
+            d = abs(lnE - math.log(Ee))
+            best = d if best is None else min(best, d)
+        if best is None:
+            continue
+        s += wi * math.exp(-best)
+    return float(s)
+
+def epc_edge_tweak_actonly(EPC_shell2: float, Sclosest_pred: float, max_Z: int,
+                           b=0.102999, S0=0.100423):
+    """
+    Optional, tiny tweak. Only apply if max_Z >= 89 (actinide-like materials).
+    (b,S0 are frozen from a prior fit; you can set b=0 to disable.)
+    """
+    if (max_Z >= 89) and np.isfinite(Sclosest_pred) and np.isfinite(EPC_shell2):
+        return float(EPC_shell2 * math.exp(b*(Sclosest_pred - S0)))
+    return float(EPC_shell2)
+
+def predict_one(formula: str):
+    w = mass_fractions_from_formula(formula, Amap_global)
+    J1,J2,J4, J3 = J_moments(w, Zmap_global, Amap_global)
+    Ex_pred, EPC_pred = gawd_core_predict(J1,J2,J4)
+
+    EPC_shell2, low_gate, high_gate, Dlow, Dhigh, max_nsub, R1S_array, Shift_exponent= epc_shell2(
+        EPC_pred, w, Zmap_global, E1s_map, nsub_map
+    )
+
+    mz = max_Z_in_formula(formula, Zmap_global)
+    S = Sclosest(formula, EPC_pred, edgeE, Amap_global)  # optional feature
+    EPC_final = epc_edge_tweak_actonly(EPC_shell2, S, mz)  # optional final
+
+    return {
+        "formula": formula,
+        "Ex_pred_MeV": Ex_pred,
+        "EPC_pred_MeV": EPC_pred,
+        "EPC_shell2_MeV": EPC_shell2,
+        "EPC_final_MeV": EPC_final,
+        "low_gate": low_gate,
+        "high_gate": high_gate,
+        "Dlow": Dlow,
+        "Dhigh": Dhigh,
+        "max_nsub": max_nsub,
+        "max_Z": mz,
+        "Sclosest_pred": S,
+        "w_mass_fractions": w,
+        "J1": J1,
+        "J2": J2,
+        "J3": J3,
+        "J4": J4,
+        "R1S_array": R1S_array,
+        "Shift_exponent": Shift_exponent,
+        #"edgeE": edgeE
+    }
+
+def GawdApotheosis(GawdData: str, model_type: str | None = "G" ):
+  b=0.102999
+  S0=0.100423
+
+  predictdata = predict_one(GawdData)
+
+  formula = predictdata['formula']
+  Ex_pred_MeV = predictdata['Ex_pred_MeV']
+
+  EPC_pred_MeV = predictdata['EPC_pred_MeV']
+  EPC_shell2_MeV = predictdata['EPC_shell2_MeV']
+  EPC_final_MeV = predictdata['EPC_final_MeV']
+  Ex_pred_MeV = predictdata["Ex_pred_MeV"]
+
+  low_gate = predictdata['low_gate']
+  high_gate = predictdata['high_gate']
+  Dlow = predictdata['Dlow']
+  Dhigh = predictdata['Dhigh']
+  max_nsub = predictdata['max_nsub']
+  max_Z = predictdata['max_Z']
+  Sclosest_pred = predictdata['Sclosest_pred']
+  w_mass_fractions = predictdata['w_mass_fractions']
+
+  J1 = predictdata['J1']
+  J2 = predictdata['J2']
+  J3 = predictdata['J3']
+  J4 = predictdata['J4']
+  VectorV3 = (J1,J2,J4)
+  VectorV4 = (J1,J2,J3,J4)
+  Shift_exponent =  predictdata['Shift_exponent']
+
+  R1S_array =  predictdata['R1S_array']
+  R1s_weighted = sum(weight * val for weight, val in zip(w_mass_fractions.values(), R1S_array) if np.isfinite(val))
+  Etot = Ex_pred_MeV + EPC_final_MeV # find the Potential Energy Surface of the material
+  REB = EPC_final_MeV / Ex_pred_MeV
+  Sigma = (Ex_pred_MeV / EPC_final_MeV) * Sclosest_pred
+  delta_AN_raw = math.exp(b*(Sclosest_pred - S0)) - 1
+  delta_AN_applied = delta_AN_raw if max_Z >= 89 else 0.0
+
+  Variance_surrogate = J2 - (J1*J1)
+  Gain = EPC_shell2_MeV / EPC_pred_MeV
+  DeltaPercent = 100*(Gain-1)
+
+  is_actinide_domain = (max_Z >= 89)
+  is_simple_shell = (max_nsub <= 4)
+  is_complex_shell = (max_nsub >= 20)
+  is_mid_shell = (5 <= max_nsub <= 19)
+
+  shell_val = (int(is_actinide_domain) << 0) | \
+              (int(is_simple_shell)   << 1) | \
+              (int(is_complex_shell)  << 2) | \
+              (int(is_mid_shell)      << 3)
+
+  return {
+    "formula": formula,
+    "Ex_pred_MeV": Ex_pred_MeV,
+    "EPC_pred_MeV": EPC_pred_MeV,
+    "EPC_shell2_MeV": EPC_shell2_MeV,
+    "EPC_final_MeV": EPC_final_MeV,
+
+    "low_gate": low_gate,
+    "high_gate": high_gate,
+    "Dlow": Dlow,
+    "Dhigh": Dhigh,
+    "max_nsub": max_nsub,
+    "max_Z": max_Z,
+    "Sclosest_pred": Sclosest_pred,
+    "w_mass_fractions": w_mass_fractions,
+
+    "J1": J1,
+    "J2": J2,
+    "J3": J3,
+    "J4": J4,
+    "VectorV3": VectorV3,
+    "VectorV4": VectorV4,
+    "Shift_exponent": Shift_exponent,
+
+    "R1S_array": R1S_array,          # if this is a numpy array and you want JSON later: R1S_array.tolist()
+    "R1s_weighted": R1s_weighted,
+    "Etot": Etot,
+    "REB": REB,
+    "Sigma": Sigma,
+    "delta_AN_raw": delta_AN_raw,
+    #"delta_AN_applied": delta_AN_applied,
+    "Variance_surrogate": Variance_surrogate,
+    "Gain": Gain,
+    #"DeltaPercent": DeltaPercent,
+    "shell_val": shell_val
+  }
+
+def compute_composition_descriptors(w_mass_fractions, pt):
+    # normalize weights
+    syms = []
+    w = []
+    for s, wi in w_mass_fractions.items():
+        if wi is None:
+            continue
+        wi = _safe_float(wi)
+        if wi is None or wi <= 0:
+            continue
+        if s not in pt:
+            continue
+        syms.append(s)
+        w.append(wi)
+
+    sw = sum(w)
+    if sw <= 0:
+        return {"desc_ok": False, "desc_reason": "no_valid_elements"}
+
+    w = [wi/sw for wi in w]
+    n_el = len(syms)
+
+    # core scalar composition descriptors
+    out = {
+        "desc_ok": True,
+        "N_elements": n_el,
+        "Comp_entropy": _w_entropy(w),            # diversity
+        "Comp_gini": _gini(w),                    # dominance
+        "Major_fraction": max(w) if w else None,  # largest element fraction
+        "Minor_fraction": min(w) if w else None,
+    }
+
+    # per-element properties to summarize
+    props = {
+        "Z": [],
+        "A": [],
+        "EN": [],
+        "Rcov": [],
+        "Rvdw": [],
+        "EA": [],
+        "IE1": [],
+        "Valence": [],
+        "Period": [],
+        "Group": []
+    }
+
+    for s in syms:
+        el = pt[s]
+        props["Z"].append(_safe_float(el.get("number")))
+        props["A"].append(_safe_float(el.get("atomic_mass")))
+        props["EN"].append(_safe_float(el.get("electronegativity_pauling")))
+        props["Rcov"].append(_safe_float(el.get("radius_covalent_cordero")))
+        props["Rvdw"].append(_safe_float(el.get("radius_vdw")))
+        props["EA"].append(_safe_float(el.get("electron_affinity")))
+        props["IE1"].append(_first_ionization(el))
+        props["Valence"].append(_valence_proxy(el))
+        props["Period"].append(_safe_float(el.get("period")))
+        props["Group"].append(_safe_float(el.get("group")))
+
+    # summarize each property with weighted stats
+    def add_stats(prefix, arr):
+        vals = []
+        ws = []
+        for ai, wi in zip(arr, w):
+            if ai is not None:
+                vals.append(ai)
+                ws.append(wi)
+        st = _weighted_stats(vals, ws)
+        out[f"{prefix}_mean"] = st["mean"]
+        out[f"{prefix}_var"] = st["var"]
+        out[f"{prefix}_std"] = st["std"]
+        out[f"{prefix}_min"] = st["min"]
+        out[f"{prefix}_max"] = st["max"]
+        out[f"{prefix}_range"] = st["range"]
+        out[f"{prefix}_mad"] = st["mad"]
+
+        # pairwise mean absolute difference
+        out[f"{prefix}_pairdiff"] = _pairwise_weighted_mean_abs_diff(vals, ws) if vals else None
+
+        # coverage fraction (how complete this property is for this formula)
+        out[f"{prefix}_coverage"] = (len(vals)/len(arr)) if len(arr) > 0 else None
+
+    add_stats("Z", props["Z"])
+    add_stats("A", props["A"])
+    add_stats("EN", props["EN"])
+    add_stats("Rcov", props["Rcov"])
+    add_stats("Rvdw", props["Rvdw"])
+    add_stats("EA", props["EA"])
+    add_stats("IE1", props["IE1"])
+    add_stats("Valence", props["Valence"])
+    add_stats("Period", props["Period"])
+    add_stats("Group", props["Group"])
+
+    # block fractions (s/p/d/f)
+    block_mass = {"s": 0.0, "p": 0.0, "d": 0.0, "f": 0.0, "other": 0.0}
+    for s, wi in zip(syms, w):
+        b = str(pt[s].get("block", "")).strip().lower()
+        if b in block_mass:
+            block_mass[b] += wi
+        else:
+            block_mass["other"] += wi
+    for k, v in block_mass.items():
+        out[f"BlockFrac_{k}"] = v
+
+    # simple composite proxies
+    # 1) "heterogeneity index" from normalized spreads
+    #    (safe even if some terms missing)
+    het_terms = []
+    for key in ("EN_std", "Rcov_std", "Valence_std", "Z_std"):
+        v = out.get(key)
+        if v is not None:
+            het_terms.append(v)
+    out["Heterogeneity_index_raw"] = sum(het_terms)/len(het_terms) if het_terms else None
+
+    # 2) "ionic tendency proxy": EN spread + valence spread
+    en_rng = out.get("EN_range")
+    val_rng = out.get("Valence_range")
+    if en_rng is not None and val_rng is not None:
+        out["Ionic_tendency_proxy"] = 0.7*en_rng + 0.3*val_rng
+    elif en_rng is not None:
+        out["Ionic_tendency_proxy"] = en_rng
+    elif val_rng is not None:
+        out["Ionic_tendency_proxy"] = val_rng
+    else:
+        out["Ionic_tendency_proxy"] = None
+
+    # 3) "heavy element load"
+    # weighted fraction with Z >= 57, >= 83, >= 93
+    zvals = props["Z"]
+    hz57 = hz83 = hz93 = 0.0
+    for zi, wi in zip(zvals, w):
+        if zi is None:
+            continue
+        if zi >= 57: hz57 += wi
+        if zi >= 83: hz83 += wi
+        if zi >= 93: hz93 += wi
+    out["HeavyFrac_Zge57"] = hz57
+    out["HeavyFrac_Zge83"] = hz83
+    out["HeavyFrac_Zge93"] = hz93
+
+    # 4) completeness score across key fields
+    key_cov = [
+        out.get("Z_coverage"), out.get("A_coverage"), out.get("EN_coverage"),
+        out.get("Rcov_coverage"), out.get("Valence_coverage")
+    ]
+    key_cov = [c for c in key_cov if c is not None]
+    out["Descriptor_completeness"] = (sum(key_cov)/len(key_cov)) if key_cov else None
+
+    return out
+
+def _safe_float(x):
+    try:
+        if x is None:
+            return None
+        v = float(x)
+        if math.isnan(v) or math.isinf(v):
+            return None
+        return v
+    except Exception:
+        return None
+
+def _weighted_stats(values, weights):
+    # values/weights already filtered for valid values
+    if not values:
+        return {
+            "mean": None, "var": None, "std": None, "min": None, "max": None,
+            "range": None, "mad": None
+        }
+    wsum = sum(weights)
+    if wsum <= 0:
+        return {
+            "mean": None, "var": None, "std": None, "min": None, "max": None,
+            "range": None, "mad": None
+        }
+    mean = sum(v*w for v, w in zip(values, weights)) / wsum
+    var = sum(w*((v-mean)**2) for v, w in zip(values, weights)) / wsum
+    std = math.sqrt(max(var, 0.0))
+    vmin = min(values)
+    vmax = max(values)
+    vrng = vmax - vmin
+    mad = sum(w*abs(v-mean) for v, w in zip(values, weights)) / wsum
+    return {
+        "mean": mean, "var": var, "std": std, "min": vmin, "max": vmax,
+        "range": vrng, "mad": mad
+    }
+
+def _w_entropy(weights, eps=1e-15):
+    # Shannon entropy over composition weights
+    # accepts raw weights; normalizes internally
+    s = sum(weights)
+    if s <= 0:
+        return None
+    p = [max(w/s, eps) for w in weights if w > 0]
+    return -sum(pi * math.log(pi) for pi in p)
+
+def _gini(weights):
+    # Gini on normalized positive weights
+    s = sum(weights)
+    if s <= 0:
+        return None
+    p = sorted([w/s for w in weights if w > 0])
+    n = len(p)
+    if n == 0:
+        return None
+    # Gini = 1 - 2 * sum((n+1-i)*p_i)/n
+    acc = 0.0
+    for i, pi in enumerate(p, start=1):
+        acc += (n + 1 - i) * pi
+    return 1.0 - 2.0 * acc / n
+
+def _pairwise_weighted_mean_abs_diff(vals, w):
+    # sum_{i<j} (w_i*w_j)*|x_i-x_j| / sum_{i<j}(w_i*w_j)
+    n = len(vals)
+    if n < 2:
+        return None
+    num = 0.0
+    den = 0.0
+    for i in range(n):
+        for j in range(i+1, n):
+            wij = w[i]*w[j]
+            den += wij
+            num += wij * abs(vals[i] - vals[j])
+    if den <= 0:
+        return None
+    return num / den
+
+def _first_ionization(el):
+    ies = el.get("ionization_energies", None)
+    if isinstance(ies, list) and len(ies) > 0:
+        return _safe_float(ies[0])
+    return None
+
+def _valence_proxy(el):
+    shells = el.get("shells", None)
+    if isinstance(shells, list) and len(shells) > 0:
+        return _safe_float(shells[-1])
+    return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
