@@ -1,33 +1,101 @@
 # Generalized Atomic Weight Descriptor (GAWD)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.xxxxxxx.svg)](https://doi.org/10.5281/zenodo.xxxxxxx)
+
 [![License](https://img.shields.io/badge/License-Proprietary_Research-red.svg)](LICENSE)
 
-**GAWD** is a high-performance deterministic physics engine engineered to screen chemical compounds for radiation-related material discovery. Unlike modern machine learning approaches that rely on black-box heuristics, GAWD utilizes rigorous relativistic material physics and photon interaction models to predict material behavior.
+# GAWD
 
-## Core Philosophy: Determinism Over Guesswork
+**GAWD** (**G**eneralized **A**tomic **W**eight **D**escriptor) is a deterministic, composition-first engine for direct computation of attenuation crossover coordinates from chemical formula.
 
-In advanced engineering, the margins for error are non-existent. GAWD was built to eliminate the stochastic "hallucinations" of AI surrogates by grounding every calculation in immutable physical laws.
+GAWD computes the pair–Compton crossover (**Ex**) and the photoelectric–scattering crossover (**EPC**) directly from stoichiometry, using composition-weighted atomic moments and bounded physics-based refinements. It is designed to replace repeated runtime table-search and interpolation with a compact, auditable computational model.
 
-* **Zero ML Reliance**: No training data, no weights, no rounding drift.
-* **Physics-First Approach**: Screens 8-million+ PubChem formulas using deterministic models rather than statistical guesswork.
-* **Precision and Control**: Designed with a focus on fundamental physics architecture, prioritizing stability and exact physical modeling over unverified processing speed.
+## What GAWD Does
 
-## Technical Architecture
+Given a chemical formula, GAWD computes:
 
-GAWD operates on a highly optimized computing framework designed for maximum hardware efficiency and reliability.
+- **Ex** — the energy at which pair production equals incoherent (Compton) scattering
+- **EPC** — the energy at which photoelectric attenuation equals total scattering
+- supporting derived quantities for analysis, filtering, and comparison
 
-* **Strictly Reversible Integer Framework**: Resolves stability issues found in standard fixed-point non-linear computation by replacing floating-point math with pure int16/Q0.15 arithmetic.
-* **Elimination of Non-Determinism**: Eradicates rounding drift and overflow instability, ensuring perfect reproducibility across all computational runs.
+The framework is deterministic. The same input formula always produces the same result.
 
-## Physics Capabilities
+## Core Idea
 
-The engine calculates core shielding and stability metrics directly from the atomic properties of the compounds:
-* **Energy Crossover ($E_x$)**: Deterministic modeling of the Compton window.
-* **Pair Production ($EPC$)**: Precise calculation of pair-production efficiency.
-* **Relativistic Bias**: Evaluation of relativistic effects in high-Z materials.
+GAWD reduces a compound to a compact family of composition moments built from:
 
-## License and Citation
+- elemental mass fractions
+- atomic number
+- atomic mass
 
-* **License**: This software is released under a Proprietary Research License. Please see the `LICENSE` file for full terms regarding permitted academic research and commercial use restrictions.
-* **Citation**: If you utilize the GAWD engine in your research, please see the `CITATION.cff` file for formatting guidelines and DOI information.
+These moments drive direct laws for the main crossover coordinates. Where atomic-regime structure matters, GAWD applies tightly bounded shell-aware and actinide-edge refinements without replacing the core model with ad hoc patching or black-box inference.
+
+## Architecture
+
+GAWD is organized in layers:
+
+### 1. Core predictor
+Computes the base **Ex** and **EPC** estimates directly from composition moments.
+
+### 2. Shell-aware refinement
+Applies bounded correction logic where shell-regime structure materially affects EPC behavior.
+
+### 3. Actinide-edge refinement
+Adds a domain-specific edge correction for actinide-regime materials using independent atomic edge information.
+
+### 4. Descriptor expansion
+Generates additional composition-only descriptors for large-scale filtering, ranking, and analysis, while leaving the base predictions unchanged.
+
+## What GAWD Is Not
+
+GAWD is not:
+
+- a neural network
+- a black-box surrogate
+- a runtime wrapper around legacy attenuation table lookup
+- a structure-dependent quantum simulation engine
+
+It is a direct stoichiometric model.
+
+## Inputs
+
+GAWD accepts a chemical formula string as input.
+
+Examples:
+
+- `H2O`
+- `Bi2O3`
+- `UO2`
+- `LiH`
+- `Ni0.52Cr0.19Fe0.18Nb0.05Mo0.03Ti0.01Al0.005`
+
+## Outputs
+
+Typical outputs include:
+
+- `Ex_pred_MeV`
+- `EPC_pred_MeV`
+- `EPC_shell2_MeV`
+- `EPC_final_MeV`
+- `max_Z`
+- `max_nsub`
+- `Dlow`
+- `Dhigh`
+- `Sclosest_pred`
+- `J1`, `J2`, `J3`, `J4`
+- expanded derived descriptors when enabled
+
+## Minimal Example
+
+```python
+from gawd import predict_one, GawdApotheosis
+
+result = predict_one("Bi2O3")
+print(result["Ex_pred_MeV"])
+print(result["EPC_final_MeV"])
+
+full = GawdApotheosis("UO2")
+print(full["formula"])
+print(full["Ex_pred_MeV"])
+print(full["EPC_final_MeV"])
+print(full["Sigma"])
