@@ -25,6 +25,7 @@ The generalized composition moments are defined by
 
 ```math
 J_p = \sum_i \frac{w_i Z_i^p}{A_i}
+```
 
 
 **GAWD** computes the pair–Compton crossover (**Ex**) and the photoelectric–scattering crossover (**EPC**) directly from stoichiometry, using composition-weighted atomic moments and bounded physics-based refinements. It is designed to replace repeated runtime table-search and interpolation with a compact, auditable computational model.
