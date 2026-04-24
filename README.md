@@ -4,11 +4,13 @@
 
 [![License](https://img.shields.io/badge/License-Proprietary_Research-red.svg)](LICENSE)
 
-# GAWD
-
 **GAWD** (**G**eneralized **A**tomic **W**eight **D**escriptor) is a deterministic, composition-first engine for direct computation of attenuation crossover coordinates from chemical formula.
 
-GAWD computes the pair–Compton crossover (**Ex**) and the photoelectric–scattering crossover (**EPC**) directly from stoichiometry, using composition-weighted atomic moments and bounded physics-based refinements. It is designed to replace repeated runtime table-search and interpolation with a compact, auditable computational model.
+**GAWD** computes the pair–Compton crossover (**Ex**) and the photoelectric–scattering crossover (**EPC**) directly from stoichiometry, using composition-weighted atomic moments and bounded physics-based refinements. It is designed to replace repeated runtime table-search and interpolation with a compact, auditable computational model.
+
+##Scientific Position
+
+**GAWD** was developed against legacy attenuation-reference behavior but does not depend on runtime legacy lookup to produce predictions. Its central claim is that a substantial portion of the attenuation crossover landscape can be recovered directly from stoichiometric moment structure, with bounded atomic-regime refinements where required.
 
 ## What GAWD Does
 
@@ -19,6 +21,17 @@ Given a chemical formula, GAWD computes:
 - supporting derived quantities for analysis, filtering, and comparison
 
 The framework is deterministic. The same input formula always produces the same result.
+
+##Intended Use
+
+GAWD is intended for:
+
+- Direct estimation of attenuation crossover coordinates from formula
+- Deterministic comparison of known materials
+- Evaluation of hypothetical or previously untabulated compounds
+- High-throughput screening workflows
+- Materials ranking, filtering, and search
+
 
 ## Core Idea
 
@@ -56,6 +69,16 @@ GAWD is not:
 - a structure-dependent quantum simulation engine
 
 It is a direct stoichiometric model.
+
+##Repository Scope
+
+This repository contains the public GAWD engine and supporting code needed to compute crossover coordinates from chemical formula.
+
+It does not document or expose private downstream search workflows, internal ranking pipelines, or unpublished application-specific deployment layers.
+
+##Status
+
+**GAWD** is under active development. Public releases may expand the validation set, documentation, parser behavior, and supporting utilities, while preserving the deterministic composition-first core.
 
 ## Inputs
 
