@@ -177,14 +177,14 @@ These quantities are derived from the core GAWD outputs and are intended for sea
 - **`VectorV3` / `VectorV4`** — grouped moment tuples for downstream analysis
 
 
+## Supporting Data File
+
+`material_descriptors.py` is provided as a convenience file for users of GAWD. It contains commonly needed associated lookup information used alongside the software and does not itself constitute part of the core GAWD method.
 
 
+## Example Notebook
 
-
-
-
-
-
+A companion notebook is included to demonstrate basic usage, derived-output examples, and related helper workflows. Users can download the Python files together with the notebook and begin working with the engine immediately.
 
 
 ## Minimal Example
