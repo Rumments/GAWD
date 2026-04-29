@@ -188,7 +188,7 @@ A companion notebook is included to demonstrate basic usage, derived-output exam
 ## Minimal Example
 
 ```python
-from gawd import Gawd, GawdApotheosis
+from GAWD import Gawd, GawdApotheosis
 
 result = Gawd("Bi2O3")
 print(result["Ex_pred_MeV"])
