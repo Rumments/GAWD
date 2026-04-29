@@ -1,6 +1,6 @@
 # Generalized Atomic Weight Descriptor (GAWD)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19681020.svg)](https://doi.org/10.5281/zenodo.19681020)  [![License](https://img.shields.io/badge/License-Proprietary_Research-red.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19681020.svg)](https://doi.org/10.5281/zenodo.19681020)  [![License](https://img.shields.io/badge/License-PolyForm_Noncommercial_1.0.0-blue.svg)](LICENSE.txt)
 
 **GAWD** (**G**eneralized **A**tomic **W**eight **D**escriptor) is a deterministic, composition-first engine for direct computation of attenuation crossover coordinates from chemical formula only.
 
