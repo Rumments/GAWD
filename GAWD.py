@@ -233,7 +233,6 @@ def GawdApotheosis(GawdData: str, model_type: str | None = "G" ):
   #Zeff = GawdZeff(formula, Ex_pred_MeV, EPC_pred_MeV)
   EPC_shell2_MeV = predictdata['EPC_shell2_MeV']
   EPC_final_MeV = predictdata['EPC_final_MeV']
-  Ex_pred_MeV = predictdata["Ex_pred_MeV"]
 
   low_gate = predictdata['low_gate']
   high_gate = predictdata['high_gate']
