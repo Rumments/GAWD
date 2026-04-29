@@ -193,7 +193,8 @@ def Gawd(formula: str):
 
 
 def GawdZeff(formula, Ex = 0, EPC = 0):
-  
+    # This code is a potential work in progress to replace Zeff with a computational form. 
+    # While its computational and has its basis, it has not been sufficiently confirmed to be a part of the open release
     f_ex = Ex
     f_epc = EPC
     if (Ex == 0) :
