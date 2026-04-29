@@ -277,7 +277,7 @@ def GawdApotheosis(GawdData: str, model_type: str | None = "G" ):
 
   return {
     "formula": formula,
-    #"Zeff": Zeff,
+    #"GZeff": Zeff,
     "Ex_pred_MeV": Ex_pred_MeV,
     "EPC_pred_MeV": EPC_pred_MeV,
     "EPC_shell2_MeV": EPC_shell2_MeV,
